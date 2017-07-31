@@ -7,32 +7,21 @@ from opcode.library import snmpget
 from opcode.snmp_lib import *
 
 
-###
-#
-# SNMP_HOST = '172.16.1.1'
-# SNMP_PORT = 161
-# SNMP_COMMUNITY = 'CISJNULAN'
-# snmp_xtreme_core = [SNMP_HOST, SNMP_PORT, SNMP_COMMUNITY]
-#
-# a = snmp_inoctet(1014, snmp_xtreme_core)
-# print(a)
 
-####
 # DB CONNECTIONS
-#db_CISNMS = pymysql.connect("localhost","root","python@dl3sca3301","CISNMS")
-db_CISNMS = pymysql.connect("10.100.2.21","root","sqldb@cisitportal","CISNMS")
+
+db_CISNMS = pymysql.connect("DB_IP","DB_RW_USER","DB_PASS","DB_NAME")
 cursor = db_CISNMS.cursor()
 cursor.execute("SELECT VERSION()")
 data = cursor.fetchone()
 print ("Database version : %s " % data)
-#db_CISNMS.close()
-##sql_XTREME_CORE_1014 = mysql.connector.connect(user='CIS_NMS_RW',password='RW#CISNMS',host='localhost',database='XTREME_CORE_1014')
+
 
 def xtreme_core(interval):
 
-    SNMP_HOST = '172.16.1.1'
+    SNMP_HOST = 'SNMP_AGENT_IP'
     SNMP_PORT = 161
-    SNMP_COMMUNITY = 'CISJNULAN'
+    SNMP_COMMUNITY = 'SNMP_COMMUNITY'
     snmp_var = [SNMP_HOST, SNMP_PORT, SNMP_COMMUNITY]
     try:
         #IN OCTET FETCH - PRE-SLEEP
@@ -191,11 +180,11 @@ def xtreme_core(interval):
 
 
 
-def sophos_dc(interval):
+def FIREWALL_dc(interval):
 
     SNMP_HOST = '172.16.0.1'
     SNMP_PORT = 161
-    SNMP_COMMUNITY = 'CISJNULAN'
+    SNMP_COMMUNITY = 'SNMP_COMMUNITY'
     snmp_var = [SNMP_HOST, SNMP_PORT, SNMP_COMMUNITY]
     try:
 
@@ -317,29 +306,29 @@ def sophos_dc(interval):
 
         #STATIC ATTRIBUTES
         # CPU USAGE IN PERCENTAGE
-        cpuusage_percent = snmp_cpupercent_sophos(snmp_var)
+        cpuusage_percent = snmp_cpupercent_FIREWALL(snmp_var)
         logging.info("CPU USAGE % = " + str(cpuusage_percent))
 
-        diskusage_percent = snmp_diskpercent_sophos(snmp_var)
+        diskusage_percent = snmp_diskpercent_FIREWALL(snmp_var)
         logging.info("DISK USAGE % = " + str(diskusage_percent))
 
-        memoryusage_percent = snmp_memorypercent_sophos(snmp_var)
+        memoryusage_percent = snmp_memorypercent_FIREWALL(snmp_var)
         logging.info("RAM USAGE % = " + str(memoryusage_percent))
 
-        live_users = snmp_liveusers_sophos(snmp_var)
+        live_users = snmp_liveusers_FIREWALL(snmp_var)
         logging.info("Live Users = " + str(live_users))
 
 
 
-        data_sophos_dc = (in_bw_calculate_LAN_R, out_bw_calculate_LAN_R,in_bw_calculate_WAN_Q, out_bw_calculate_WAN_Q,in_bw_calculate_DMZ_P, out_bw_calculate_DMZ_P,
+        data_FIREWALL_dc = (in_bw_calculate_LAN_R, out_bw_calculate_LAN_R,in_bw_calculate_WAN_Q, out_bw_calculate_WAN_Q,in_bw_calculate_DMZ_P, out_bw_calculate_DMZ_P,
                           cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
-        print(data_sophos_dc)
-        sql_insert_sophos_dc = "INSERT INTO SOPHOS_DC(LAN_IN, LAN_OUT, WAN_IN, WAN_OUT, DMZ_IN, DMZ_OUT, CPU, DISK, MEMORY, LIVE_USERS) VALUES ('%f','%f','%f','%f','%f','%f','%d','%d','%d','%d')" % (in_bw_calculate_LAN_R, out_bw_calculate_LAN_R,in_bw_calculate_WAN_Q, out_bw_calculate_WAN_Q,in_bw_calculate_DMZ_P, out_bw_calculate_DMZ_P, cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
-        logging.info(sql_insert_sophos_dc)
+        print(data_FIREWALL_dc)
+        sql_insert_FIREWALL_dc = "INSERT INTO FIREWALL_DC(LAN_IN, LAN_OUT, WAN_IN, WAN_OUT, DMZ_IN, DMZ_OUT, CPU, DISK, MEMORY, LIVE_USERS) VALUES ('%f','%f','%f','%f','%f','%f','%d','%d','%d','%d')" % (in_bw_calculate_LAN_R, out_bw_calculate_LAN_R,in_bw_calculate_WAN_Q, out_bw_calculate_WAN_Q,in_bw_calculate_DMZ_P, out_bw_calculate_DMZ_P, cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
+        logging.info(sql_insert_FIREWALL_dc)
 
         try:
             # Execute the SQL command
-            cursor.execute(sql_insert_sophos_dc)
+            cursor.execute(sql_insert_FIREWALL_dc)
             # Commit your changes in the database
             db_CISNMS.commit()
         except:
@@ -348,22 +337,14 @@ def sophos_dc(interval):
             db_CISNMS.rollback()
     except Exception as error:
         print(error)
-        print("SOPHOS_DC DATA COLLECTION ERROR ENCOUNTERED")
+        print("FIREWALL_DC DATA COLLECTION ERROR ENCOUNTERED")
 
 
-        # sql_insert_1014 = "INSERT INTO XTREME_CORE_1014(INT_DESR, OUT_TRAFFIC, IN_TRAFFIC, IF_STATUS, IF_LASTCHANGE) VALUES ('%s','%d','%d','%s','%d')" % (
-        # int_desr_1014, out_bw_calculate_1014, in_bw_calculate_1014, int_status_1014, int_modified_1014)
-        # sql_insert_1016 = "INSERT INTO XTREME_CORE_1016(INT_DESR, OUT_TRAFFIC, IN_TRAFFIC, IF_STATUS, IF_LASTCHANGE) VALUES ('%s','%d','%d','%s','%d')" % (
-        # int_desr_1016, out_bw_calculate_1016, in_bw_calculate_1016, int_status_1016, int_modified_1016)
-        # logging.info(sql_insert_1014)
-        # logging.info(sql_insert_1016)
-
-
-def sophos_campus(interval):
+def FIREWALL_campus(interval):
 
     SNMP_HOST = '192.168.100.2'
     SNMP_PORT = 161
-    SNMP_COMMUNITY = 'CISJNULAN'
+    SNMP_COMMUNITY = 'SNMP_COMMUNITY'
     snmp_var = [SNMP_HOST, SNMP_PORT, SNMP_COMMUNITY]
     try:
 
@@ -485,29 +466,29 @@ def sophos_campus(interval):
 
         #STATIC ATTRIBUTES
         # CPU USAGE IN PERCENTAGE
-        cpuusage_percent = snmp_cpupercent_sophos(snmp_var)
+        cpuusage_percent = snmp_cpupercent_FIREWALL(snmp_var)
         logging.info("CPU USAGE % = " + str(cpuusage_percent))
 
-        diskusage_percent = snmp_diskpercent_sophos(snmp_var)
+        diskusage_percent = snmp_diskpercent_FIREWALL(snmp_var)
         logging.info("DISK USAGE % = " + str(diskusage_percent))
 
-        memoryusage_percent = snmp_memorypercent_sophos(snmp_var)
+        memoryusage_percent = snmp_memorypercent_FIREWALL(snmp_var)
         logging.info("RAM USAGE % = " + str(memoryusage_percent))
 
-        live_users = snmp_liveusers_sophos(snmp_var)
+        live_users = snmp_liveusers_FIREWALL(snmp_var)
         logging.info("Live Users = " + str(live_users))
 
 
 
-        data_sophos_campus = (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2,
+        data_FIREWALL_campus = (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2,
                           cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
-        print(data_sophos_campus)
-        sql_insert_sophos_campus = "INSERT INTO SOPHOS_CAMPUS(LAN_IN, LAN_OUT, WAN_IN, WAN_OUT, DMZ_IN, DMZ_OUT, CPU, DISK, MEMORY, LIVE_USERS) VALUES ('%f','%f','%f','%f','%f','%f','%d','%d','%d','%d')" % (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2, cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
-        logging.info(sql_insert_sophos_campus)
+        print(data_FIREWALL_campus)
+        sql_insert_FIREWALL_campus = "INSERT INTO FIREWALL_CAMPUS(LAN_IN, LAN_OUT, WAN_IN, WAN_OUT, DMZ_IN, DMZ_OUT, CPU, DISK, MEMORY, LIVE_USERS) VALUES ('%f','%f','%f','%f','%f','%f','%d','%d','%d','%d')" % (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2, cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
+        logging.info(sql_insert_FIREWALL_campus)
 
         try:
             # Execute the SQL command
-            cursor.execute(sql_insert_sophos_campus)
+            cursor.execute(sql_insert_FIREWALL_campus)
             # Commit your changes in the database
             db_CISNMS.commit()
         except:
@@ -516,14 +497,14 @@ def sophos_campus(interval):
             db_CISNMS.rollback()
     except Exception as error:
         print(error)
-        print("SOPHOS_CAMPUS DATA COLLECTION ERROR ENCOUNTERED")
+        print("FIREWALL_CAMPUS DATA COLLECTION ERROR ENCOUNTERED")
 
 
-def sophos_academic(interval):
+def FIREWALL_academic(interval):
 
     SNMP_HOST = '192.168.200.2'
     SNMP_PORT = 161
-    SNMP_COMMUNITY = 'CISJNULAN'
+    SNMP_COMMUNITY = 'SNMP_COMMUNITY'
     snmp_var = [SNMP_HOST, SNMP_PORT, SNMP_COMMUNITY]
     try:
 
@@ -645,29 +626,29 @@ def sophos_academic(interval):
 
         #STATIC ATTRIBUTES
         # CPU USAGE IN PERCENTAGE
-        cpuusage_percent = snmp_cpupercent_sophos(snmp_var)
+        cpuusage_percent = snmp_cpupercent_FIREWALL(snmp_var)
         logging.info("CPU USAGE % = " + str(cpuusage_percent))
 
-        diskusage_percent = snmp_diskpercent_sophos(snmp_var)
+        diskusage_percent = snmp_diskpercent_FIREWALL(snmp_var)
         logging.info("DISK USAGE % = " + str(diskusage_percent))
 
-        memoryusage_percent = snmp_memorypercent_sophos(snmp_var)
+        memoryusage_percent = snmp_memorypercent_FIREWALL(snmp_var)
         logging.info("RAM USAGE % = " + str(memoryusage_percent))
 
-        live_users = snmp_liveusers_sophos(snmp_var)
+        live_users = snmp_liveusers_FIREWALL(snmp_var)
         logging.info("Live Users = " + str(live_users))
 
 
 
-        data_sophos_academic = (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2,
+        data_FIREWALL_academic = (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2,
                           cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
-        print(data_sophos_academic)
-        sql_insert_sophos_academic = "INSERT INTO SOPHOS_ACADEMIC(LAN_IN, LAN_OUT, WAN_IN, WAN_OUT, DMZ_IN, DMZ_OUT, CPU, DISK, MEMORY, LIVE_USERS) VALUES ('%f','%f','%f','%f','%f','%f','%d','%d','%d','%d')" % (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2, cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
-        logging.info(sql_insert_sophos_academic)
+        print(data_FIREWALL_academic)
+        sql_insert_FIREWALL_academic = "INSERT INTO FIREWALL_ACADEMIC(LAN_IN, LAN_OUT, WAN_IN, WAN_OUT, DMZ_IN, DMZ_OUT, CPU, DISK, MEMORY, LIVE_USERS) VALUES ('%f','%f','%f','%f','%f','%f','%d','%d','%d','%d')" % (in_bw_calculate_LAN_D1, out_bw_calculate_LAN_D1,in_bw_calculate_WAN_D2, out_bw_calculate_WAN_D2,in_bw_calculate_DMZ_A2, out_bw_calculate_DMZ_A2, cpuusage_percent, diskusage_percent, memoryusage_percent, live_users)
+        logging.info(sql_insert_FIREWALL_academic)
 
         try:
             # Execute the SQL command
-            cursor.execute(sql_insert_sophos_academic)
+            cursor.execute(sql_insert_FIREWALL_academic)
             # Commit your changes in the database
             db_CISNMS.commit()
         except:
@@ -676,16 +657,16 @@ def sophos_academic(interval):
             db_CISNMS.rollback()
     except Exception as error:
         print(error)
-        print("SOPHOS_ACADEMIC DATA COLLECTION ERROR ENCOUNTERED")
+        print("FIREWALL_ACADEMIC DATA COLLECTION ERROR ENCOUNTERED")
 
 
 
 
-def wlc_8500(interval):
+def wlc_controller(interval):
 
     SNMP_HOST = '10.101.0.101'
     SNMP_PORT = 161
-    SNMP_COMMUNITY = 'CISJNULAN'
+    SNMP_COMMUNITY = 'SNMP_COMMUNITY'
     snmp_var = [SNMP_HOST, SNMP_PORT, SNMP_COMMUNITY]
     try:
         wlc_ap_adopted = snmp_ap_adopted(snmp_var)
@@ -752,13 +733,13 @@ def wlc_8500(interval):
         wlc_out_bw_calculate_int4 = round(out_bw_calculate_int4, 3)
         logging.info("OUT_Bandwidth Calculated_WLC PORT 4 ----------------------------" + str(wlc_out_bw_calculate_int4) + ' Mbps')
 
-        #data_wlc_8500 = (wlc_ap_adopted,wlc_clients_connected,wlc_campus_clients,wlc_academic_clients,wlc_hotspot_clients,wlc_temprature,wlc_uptime,wlc_in_bw_calculate_int4,wlc_out_bw_calculate_int4)
-        sql_insert_wlc_8500 = "INSERT INTO WLC_8500(AP_ADOPTION, TOTAL_CLIENTS, CAMPUS_CLIENTS, ACADEMIC_CLIENTS, HOTSPOT_CLIENTS, WLC_TEMPRATURE, WLC_UPTIME, WLC_IN_BW, WLC_OUT_BW) VALUES ('%d','%d','%d','%d','%d','%f','%s','%f','%f')" %(wlc_ap_adopted, wlc_clients_connected,wlc_campus_clients, wlc_academic_clients, wlc_hotspot_clients, wlc_temprature, wlc_uptime, wlc_in_bw_calculate_int4, wlc_out_bw_calculate_int4)
-        logging.info(sql_insert_wlc_8500)
+        #data_wlc_controller = (wlc_ap_adopted,wlc_clients_connected,wlc_campus_clients,wlc_academic_clients,wlc_hotspot_clients,wlc_temprature,wlc_uptime,wlc_in_bw_calculate_int4,wlc_out_bw_calculate_int4)
+        sql_insert_wlc_controller = "INSERT INTO WLC_controller(AP_ADOPTION, TOTAL_CLIENTS, CAMPUS_CLIENTS, ACADEMIC_CLIENTS, HOTSPOT_CLIENTS, WLC_TEMPRATURE, WLC_UPTIME, WLC_IN_BW, WLC_OUT_BW) VALUES ('%d','%d','%d','%d','%d','%f','%s','%f','%f')" %(wlc_ap_adopted, wlc_clients_connected,wlc_campus_clients, wlc_academic_clients, wlc_hotspot_clients, wlc_temprature, wlc_uptime, wlc_in_bw_calculate_int4, wlc_out_bw_calculate_int4)
+        logging.info(sql_insert_wlc_controller)
 
         try:
             # Execute the SQL command
-            cursor.execute(sql_insert_wlc_8500)
+            cursor.execute(sql_insert_wlc_controller)
             # Commit your changes in the database
             db_CISNMS.commit()
         except:
@@ -769,12 +750,4 @@ def wlc_8500(interval):
 
     except Exception as error:
         print(error)
-        print("WLC 8500 DATA COLLECTION ERROR ENCOUNTERED")
-
-
-        # sql_insert_1014 = "INSERT INTO XTREME_CORE_1014(INT_DESR, OUT_TRAFFIC, IN_TRAFFIC, IF_STATUS, IF_LASTCHANGE) VALUES ('%s','%d','%d','%s','%d')" % (
-        # int_desr_1014, out_bw_calculate_1014, in_bw_calculate_1014, int_status_1014, int_modified_1014)
-        # sql_insert_1016 = "INSERT INTO XTREME_CORE_1016(INT_DESR, OUT_TRAFFIC, IN_TRAFFIC, IF_STATUS, IF_LASTCHANGE) VALUES ('%s','%d','%d','%s','%d')" % (
-        # int_desr_1016, out_bw_calculate_1016, in_bw_calculate_1016, int_status_1016, int_modified_1016)
-        # logging.info(sql_insert_1014)
-        # logging.info(sql_insert_1016)
+        print("WLC controller DATA COLLECTION ERROR ENCOUNTERED")
