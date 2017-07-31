@@ -1,8 +1,10 @@
 # Autonoe
 
 SNMP BASED POLLING AND MONITORING SYSTEM(NMS)
+
+
 Python 3.4
-Librariries required: pysnmp, pymysql
+Libraries required: pysnmp, pymysql
 
 
 Pure python and SNMP based Network/Data center monitoring and polling system.
