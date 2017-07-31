@@ -7,9 +7,9 @@ from opcode.library import snmpget
 from opcode.snmp_query import *
 
 while True:
-    #xtreme_core(5)
-    #sophos_dc(5)
-    #sophos_campus(5)
-    #sophos_academic(5)
-    #wlc_8500(5)
+    switch_core(5) #
+    firewall_dc(5)
+    firewall_campus(5)
+    firewall_academic(5)
+    wlc_8500(5)
 
