@@ -8,8 +8,6 @@ Libraries required: pysnmp, pymysql
 
 
 Pure python and SNMP based Network/Data center monitoring and polling system.
-Can poll any SNMP enabled devices including, switches, router etc. even passive equipments like UPS and Data Center PACs.
-Replace OIDs and MIBs to suit your environment.
-The code pushes all data into SQL DB for historical and trace analysis.
+The program was designed to fill gaps with multiple device monitoring. With HTML designed frontend, the SNMP NMS system was able to present multiscreen monitoring of all data centre devices including UPS, Precision AC, Biometric Access Control, Servers, storage and most important security appliances. The program is custom coded to seek only relevant monitoring information, saving processor and bandwidth. The program serves as the primary NOC display wall for data center operations.
 
 Queries?? Always write to me at harrisjnu@gmail.com
